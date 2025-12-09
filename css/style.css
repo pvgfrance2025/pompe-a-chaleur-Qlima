@@ -1,0 +1,166 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* PAGE CENTRÉE PARFAITEMENT */
+body {
+  font-family: system-ui, sans-serif;
+  background-color: #87a290;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center; /* centre horizontal */
+  align-items: center; /* centre vertical */
+  flex-direction: column;
+  gap: 30px;
+  padding: 20px;
+}
+
+/* LOGO */
+.logo-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 10rem;
+}
+
+.logo {
+  max-width: 260px;
+}
+
+/* --- BLOC TRÈS LARGE --- */
+.card {
+  width: 100%; /* ⚡ prend presque toute la largeur */
+  max-width: 6000px; /* ⚡ pour écrans larges */
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 60px 70px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.18);
+  position: relative; /* pour la flèche */
+  justify-content: cener;
+}
+
+/* FLÈCHE (sans texte) */
+.back-btn {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  font-size: 2.2rem; /* grande flèche */
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #233239;
+  padding: 5px;
+  line-height: 1;
+  transition: 0.2s ease;
+}
+
+.back-btn:hover {
+  transform: translateX(-5px);
+}
+
+/* TITRES */
+.card-title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.card-subtitle {
+  text-align: center;
+  font-size: 1.3rem;
+  margin-bottom: 45px;
+  color: #555;
+}
+
+/* QUESTION */
+.question-text {
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+/* OPTIONS */
+.options-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 22px;
+}
+
+.choice-btn {
+  background: #87a290;
+  color: white;
+  border: none;
+  padding: 18px 32px;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  min-width: 270px;
+  transition: 0.2s ease;
+}
+
+.choice-btn:hover {
+  background: #6d8b82;
+  transform: translateY(-2px);
+}
+
+/* ÉTAPES */
+.step-indicator {
+  margin-top: 35px;
+  text-align: center;
+  font-size: 1rem;
+  color: #777;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .card {
+    padding: 30px 20px;
+    width: 95%;
+  }
+
+  .choice-btn {
+    min-width: 100%;
+  }
+
+  .back-btn {
+    top: 12px;
+    left: 12px;
+    font-size: 1.8rem;
+  }
+}
+.result-text {
+  font-size: 1.2rem;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.result-text p {
+  margin-bottom: 15px;
+}
+
+.result-list {
+  text-align: left;
+  margin: 10px auto 20px;
+  max-width: 800px;
+  padding-left: 20px;
+}
+
+.result-warning {
+  margin-top: 20px;
+  padding: 15px 20px;
+  border-radius: 14px;
+  background: #f5f7f6;
+  border: 1px solid #dde3df;
+  font-size: 1rem;
+}

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simulateur pompe à chaleur air-air</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <!-- Logo -->
+      <header class="logo-wrapper">
+        <img src="Logo_Qlima_White (2).png" alt="Logo Qlima" class="logo" />
+      </header>
+
+      <main class="main-content">
+        <section class="card">
+          <!-- Flèche retour -->
+          <button id="back-btn" class="back-btn" style="display: none">
+            ←
+          </button>
+
+          <h1 class="card-title">Simulateur de pompe à chaleur air-air</h1>
+          <p class="card-subtitle">
+            Répondez à quelques questions pour obtenir un modèle adapté.
+          </p>
+
+          <div id="question-container">
+            <h2 id="question-text" class="question-text"></h2>
+            <div id="options-container" class="options-container"></div>
+          </div>
+
+          <p id="step-indicator" class="step-indicator"></p>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const steps = [
+        {
+          key: "housing",
+          label: "Quel type de logement souhaitez-vous équiper ?",
+          options: [
+            { label: "Maison individuelle", value: "maison" },
+            { label: "Appartement", value: "appartement" },
+          ],
+        },
+        {
+          key: "status",
+          label: "Êtes-vous propriétaire ou locataire du logement ?",
+          options: [
+            { label: "Propriétaire", value: "proprietaire" },
+            {
+              label: "Locataire avec accord du propriétaire / bailleur",
+              value: "locataire_accord",
+            },
+            {
+              label: "Locataire sans accord (ou en attente d’accord)",
+              value: "locataire_sans_accord",
+            },
+          ],
+        },
+        {
+          key: "copro",
+          label:
+            "Êtes-vous en copropriété et les unités extérieures sont-elles autorisées ?",
+          options: [
+            {
+              label: "Pas en copropriété / maison individuelle",
+              value: "pas_copro",
+            },
+            {
+              label: "Oui, autorisées (ou accord du syndic)",
+              value: "autorise",
+            },
+            {
+              label: "Je ne sais pas / à vérifier",
+              value: "a_verifier",
+            },
+            {
+              label: "Non, interdit en façade / balcon",
+              value: "interdit",
+            },
+          ],
+        },
+        {
+          key: "outdoorSpace",
+          label:
+            "Disposez-vous d’un emplacement possible pour l’unité extérieure ?",
+          options: [
+            { label: "Au sol (jardin, terrasse)", value: "sol" },
+            { label: "En façade / mur extérieur", value: "mur" },
+            { label: "Balcon / loggia", value: "balcon" },
+            {
+              label: "Je ne dispose d’aucun emplacement adapté",
+              value: "aucun",
+            },
+          ],
+        },
+        {
+          key: "usage",
+          label:
+            "Pour quel usage principal souhaitez-vous la pompe à chaleur ?",
+          options: [
+            {
+              label: "Chauffage principal de la pièce",
+              value: "chauffage_principal",
+            },
+            {
+              label: "Chauffage d’appoint / confort",
+              value: "appoint",
+            },
+            {
+              label: "Climatisation principalement (rafraîchissement)",
+              value: "clim",
+            },
+          ],
+        },
+        {
+          key: "surface",
+          label: "Quelle est la surface de la pièce principale à équiper ?",
+          options: [
+            { label: "Moins de 25 m²", value: "S1" },
+            { label: "25 à 35 m²", value: "S2" },
+            { label: "Plus de 35 m²", value: "S3" },
+          ],
+        },
+        {
+          key: "height",
+          label: "Quelle est la hauteur sous plafond de la pièce ?",
+          options: [
+            { label: "Hauteur standard (≈ 2,4 à 2,5 m)", value: "standard" },
+            { label: "Entre 2,6 et 3 m", value: "haute" },
+            { label: "Plus de 3 m / mezzanine", value: "tres_haute" },
+          ],
+        },
+        {
+          key: "openSpace",
+          label:
+            "La pièce est-elle ouverte sur d’autres espaces (cuisine, couloir, salon) ?",
+          options: [
+            { label: "Pièce fermée", value: "fermee" },
+            { label: "Semi-ouverte", value: "semi_ouverte" },
+            { label: "Très ouverte / grande pièce de vie", value: "ouverte" },
+          ],
+        },
+        {
+          key: "isolation",
+          label: "Comment est l’isolation de votre logement ?",
+          options: [
+            { label: "Très bonne (récente, RT 2012 ou mieux)", value: "bonne" },
+            {
+              label: "Correcte (double vitrage, isolation standard)",
+              value: "moyenne",
+            },
+            { label: "Faible (ancien logement, peu isolé)", value: "faible" },
+          ],
+        },
+        {
+          key: "windows",
+          label: "Quelle est l’exposition principale de la pièce (fenêtres) ?",
+          options: [
+            { label: "Nord / peu de soleil", value: "nord" },
+            { label: "Est / soleil le matin", value: "est" },
+            { label: "Sud / très ensoleillé", value: "sud" },
+            { label: "Ouest / soleil l’après-midi", value: "ouest" },
+          ],
+        },
+        {
+          key: "climate",
+          label: "Dans quelle région habitez-vous ?",
+          options: [
+            { label: "Nord / Est de la France", value: "froid" },
+            { label: "Centre / Ouest", value: "temperer" },
+            { label: "Sud / Méditerranée", value: "doux" },
+            { label: "Zone de montagne (> 800 m)", value: "montagne" },
+          ],
+        },
+        {
+          key: "rooms",
+          label: "Combien de pièces souhaitez-vous équiper au total ?",
+          options: [
+            { label: "1 pièce", value: 1 },
+            { label: "2 pièces", value: 2 },
+            { label: "3 pièces ou plus", value: 3 },
+          ],
+        },
+        {
+          key: "electricPower",
+          label:
+            "Quelle est la puissance de votre abonnement électrique (si vous la connaissez) ?",
+          options: [
+            { label: "6 kVA ou moins", value: "6kva" },
+            { label: "9 kVA ou plus", value: "9kva" },
+            { label: "Je ne sais pas", value: "inconnu" },
+          ],
+        },
+        {
+          key: "electricPanel",
+          label:
+            "Votre tableau électrique est-il récent avec de la place pour un circuit dédié ?",
+          options: [
+            { label: "Oui", value: "oui" },
+            { label: "Non / très ancien", value: "non" },
+            { label: "Je ne sais pas", value: "inconnu" },
+          ],
+        },
+        {
+          key: "noise",
+          label:
+            "Avez-vous des contraintes fortes de bruit (voisins proches, chambres mitoyennes, etc.) ?",
+          options: [
+            { label: "Oui, contraintes importantes", value: "fortes" },
+            { label: "Non, contraintes limitées", value: "faibles" },
+          ],
+        },
+      ];
+
+      const answers = {};
+      let currentStep = 0;
+
+      const questionTextEl = document.getElementById("question-text");
+      const optionsContainerEl = document.getElementById("options-container");
+      const stepIndicatorEl = document.getElementById("step-indicator");
+      const backBtn = document.getElementById("back-btn");
+
+      function renderStep() {
+        const step = steps[currentStep];
+
+        questionTextEl.textContent = step.label;
+        optionsContainerEl.innerHTML = "";
+
+        step.options.forEach((option) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "choice-btn";
+          btn.textContent = option.label;
+
+          btn.addEventListener("click", () =>
+            handleAnswer(step.key, option.value)
+          );
+          optionsContainerEl.appendChild(btn);
+        });
+
+        stepIndicatorEl.textContent = `Question ${currentStep + 1} / ${
+          steps.length
+        }`;
+        backBtn.style.display = currentStep === 0 ? "none" : "block";
+      }
+
+      function handleAnswer(key, value) {
+        answers[key] = value;
+        currentStep++;
+
+        if (currentStep < steps.length) {
+          renderStep();
+        } else {
+          showResult();
+        }
+      }
+
+      function evaluateEligibility() {
+        const issues = [];
+        let status = "ok"; // "ok" | "conditional" | "blocked"
+
+        // 1. Propriété / location
+        if (answers.status === "locataire_sans_accord") {
+          status = "blocked";
+          issues.push(
+            "Vous êtes locataire sans accord écrit : il est indispensable d’obtenir l’autorisation du propriétaire (et éventuellement du syndic) avant toute installation."
+          );
+        }
+
+        // 2. Copropriété
+        if (answers.copro === "interdit") {
+          status = "blocked";
+          issues.push(
+            "Votre copropriété interdit les unités extérieures en façade / balcon. Sans dérogation, l’installation d’une PAC air-air n’est pas possible."
+          );
+        } else if (answers.copro === "a_verifier" && status !== "blocked") {
+          status = "conditional";
+          issues.push(
+            "Les règles de copropriété doivent être vérifiées (règlement ou contact avec le syndic) avant de valider le projet."
+          );
+        }
+
+        // 3. Emplacement extérieur
+        if (answers.outdoorSpace === "aucun") {
+          status = "blocked";
+          issues.push(
+            "Vous n’indiquez aucun emplacement possible pour l’unité extérieure. Une PAC air-air nécessite obligatoirement un emplacement extérieur adapté."
+          );
+        }
+
+        // 4. Électricité
+        if (answers.electricPower === "6kva" && status !== "blocked") {
+          status = "conditional";
+          issues.push(
+            "Avec un abonnement de 6 kVA, une vérification de la puissance disponible et de la gestion des autres appareils électriques est recommandée."
+          );
+        }
+
+        if (answers.electricPanel === "non" && status !== "blocked") {
+          status = "conditional";
+          issues.push(
+            "Votre tableau électrique semble ancien : un électricien devra vérifier la possibilité d’ajouter un circuit dédié et sécurisé."
+          );
+        }
+
+        if (answers.electricPanel === "inconnu" && status !== "blocked") {
+          status = status === "ok" ? "conditional" : status;
+          issues.push(
+            "L’état du tableau électrique reste à vérifier pour garantir un branchement conforme et sécurisé."
+          );
+        }
+
+        // 5. Bruit
+        if (answers.noise === "fortes" && status !== "blocked") {
+          status = status === "ok" ? "conditional" : status;
+          issues.push(
+            "Vous mentionnez des contraintes sonores fortes : le choix de l’emplacement et du modèle devra être étudié avec attention."
+          );
+        }
+
+        return { status, issues };
+      }
+
+      function chooseModel() {
+        const rooms = Number(answers.rooms);
+        const surface = answers.surface;
+        const isolation = answers.isolation;
+        const climate = answers.climate;
+
+        // Multi-split si plusieurs pièces
+        if (rooms >= 2) {
+          return rooms === 2 ? "SCM 52 DUO" : "SCM 52 MULTI";
+        }
+
+        // Simple split : ajustement simple selon surface / isolation / climat
+        if (surface === "S1") {
+          return "SC6026";
+        }
+
+        if (surface === "S2") {
+          // pièce moyenne : si isolation faible ou climat froid → modèle au-dessus
+          if (
+            isolation === "faible" ||
+            climate === "froid" ||
+            climate === "montagne"
+          ) {
+            return "SC6053";
+          }
+          return "SC6035";
+        }
+
+        // Grandes surfaces
+        return "SC6053";
+      }
+
+      function showResult() {
+        const { status, issues } = evaluateEligibility();
+
+        // Cas bloquant : on explique pourquoi avant même de choisir un modèle
+        if (status === "blocked") {
+          questionTextEl.textContent =
+            "Votre situation nécessite des vérifications avant d’installer une pompe à chaleur air-air";
+          const issuesList = issues.map((txt) => `<li>${txt}</li>`).join("");
+
+          optionsContainerEl.innerHTML = `
+        <div class="result-text">
+          <p>
+            D’après vos réponses, une installation de pompe à chaleur air-air n’est pas validée pour le moment.
+          </p>
+          <ul class="result-list">
+            ${issuesList}
+          </ul>
+          <p>
+            Nous vous conseillons de vérifier ces points (accord propriétaire / syndic, emplacement extérieur, contraintes réglementaires) avant d’aller plus loin.
+          </p>
+        </div>
+        <button type="button" class="choice-btn" onclick="restartQuiz()">
+          Recommencer le questionnaire
+        </button>
+      `;
+
+          stepIndicatorEl.textContent = "Conclusion";
+          backBtn.style.display = "block";
+          return;
+        }
+
+        // Sinon on peut recommander un modèle
+        const model = chooseModel();
+
+        let warningHtml = "";
+        if (status === "conditional" && issues.length > 0) {
+          const issuesList = issues.map((txt) => `<li>${txt}</li>`).join("");
+          warningHtml = `
+        <div class="result-warning">
+          <p><strong>Points à vérifier avant l’installation :</strong></p>
+          <ul class="result-list">
+            ${issuesList}
+          </ul>
+        </div>
+      `;
+        }
+
+        questionTextEl.textContent = "Votre recommandation Qlima";
+        optionsContainerEl.innerHTML = `
+      <div class="result-text">
+        <p>
+          Le modèle recommandé pour votre situation est :
+          <strong>${model}</strong>.
+        </p>
+        <p>
+          Cette recommandation est basée sur le type de logement, la surface, l’isolation et le nombre de pièces à équiper.
+        </p>
+        ${warningHtml}
+      </div>
+      <button type="button" class="choice-btn" onclick="restartQuiz()">
+        Recommencer le questionnaire
+      </button>
+    `;
+
+        stepIndicatorEl.textContent = "Simulation terminée";
+        backBtn.style.display = "block";
+
+        // On positionne currentStep après la dernière question pour bien gérer le bouton retour
+        currentStep = steps.length;
+      }
+
+      // Gestion du bouton retour (flèche en haut à gauche)
+      backBtn.addEventListener("click", () => {
+        // Si on est sur l'écran de résultat, on revient à la dernière question
+        if (currentStep >= steps.length) {
+          currentStep = steps.length - 1;
+          renderStep();
+          return;
+        }
+
+        if (currentStep > 0) {
+          currentStep--;
+          renderStep();
+        }
+      });
+
+      function restartQuiz() {
+        currentStep = 0;
+        Object.keys(answers).forEach((k) => delete answers[k]);
+        renderStep();
+      }
+
+      // Démarrage
+      renderStep();
+    </script>
+  </body>
+</html>
