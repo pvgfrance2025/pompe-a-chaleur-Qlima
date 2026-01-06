@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
+
   <body>
     <div class="page-wrapper">
       <!-- Logo -->
@@ -15,7 +16,6 @@
 
       <main class="main-content">
         <section class="card">
-          <!-- Flèche retour -->
           <button id="back-btn" class="back-btn" style="display: none">
             ←
           </button>
@@ -106,10 +106,7 @@
               label: "Chauffage principal de la pièce",
               value: "chauffage_principal",
             },
-            {
-              label: "Chauffage d’appoint / confort",
-              value: "appoint",
-            },
+            { label: "Chauffage d’appoint / confort", value: "appoint" },
             {
               label: "Climatisation principalement (rafraîchissement)",
               value: "clim",
@@ -226,7 +223,6 @@
 
       function renderStep() {
         const step = steps[currentStep];
-
         questionTextEl.textContent = step.label;
         optionsContainerEl.innerHTML = "";
 
@@ -235,7 +231,6 @@
           btn.type = "button";
           btn.className = "choice-btn";
           btn.textContent = option.label;
-
           btn.addEventListener("click", () =>
             handleAnswer(step.key, option.value)
           );
@@ -251,19 +246,13 @@
       function handleAnswer(key, value) {
         answers[key] = value;
         currentStep++;
-
-        if (currentStep < steps.length) {
-          renderStep();
-        } else {
-          showResult();
-        }
+        currentStep < steps.length ? renderStep() : showResult();
       }
 
       function evaluateEligibility() {
         const issues = [];
-        let status = "ok"; // "ok" | "conditional" | "blocked"
+        let status = "ok";
 
-        // 1. Propriété / location
         if (answers.status === "locataire_sans_accord") {
           status = "blocked";
           issues.push(
@@ -271,7 +260,6 @@
           );
         }
 
-        // 2. Copropriété
         if (answers.copro === "interdit") {
           status = "blocked";
           issues.push(
@@ -284,7 +272,6 @@
           );
         }
 
-        // 3. Emplacement extérieur
         if (answers.outdoorSpace === "aucun") {
           status = "blocked";
           issues.push(
@@ -292,7 +279,6 @@
           );
         }
 
-        // 4. Électricité
         if (answers.electricPower === "6kva" && status !== "blocked") {
           status = "conditional";
           issues.push(
@@ -314,7 +300,6 @@
           );
         }
 
-        // 5. Bruit
         if (answers.noise === "fortes" && status !== "blocked") {
           status = status === "ok" ? "conditional" : status;
           issues.push(
@@ -331,18 +316,10 @@
         const isolation = answers.isolation;
         const climate = answers.climate;
 
-        // Multi-split si plusieurs pièces
-        if (rooms >= 2) {
-          return rooms === 2 ? "SCM 52 DUO" : "SCM 52 MULTI";
-        }
-
-        // Simple split : ajustement simple selon surface / isolation / climat
-        if (surface === "S1") {
-          return "SC6026";
-        }
+        if (rooms >= 2) return rooms === 2 ? "SCM 52 DUO" : "SCM 52 MULTI";
+        if (surface === "S1") return "SC6026";
 
         if (surface === "S2") {
-          // pièce moyenne : si isolation faible ou climat froid → modèle au-dessus
           if (
             isolation === "faible" ||
             climate === "froid" ||
@@ -353,91 +330,237 @@
           return "SC6035";
         }
 
-        // Grandes surfaces
         return "SC6053";
+      }
+
+      function getModelAsset(model) {
+        const assets = {
+          SC6026: {
+            src: "img/pac/SC6026.png",
+            alt: "Pompe à chaleur Qlima SC6026",
+          },
+          SC6035: {
+            src: "img/pac/SC6035.png",
+            alt: "Pompe à chaleur Qlima SC6035",
+          },
+          SC6053: {
+            src: "img/pac/SC6053.png",
+            alt: "Pompe à chaleur Qlima SC6053",
+          },
+          "SCM 52 DUO": {
+            src: "img/pac/SCM52_DUO.png",
+            alt: "Pompe à chaleur Qlima SCM 52 DUO",
+          },
+          "SCM 52 MULTI": {
+            src: "img/pac/SCM52_MULTI.png",
+            alt: "Pompe à chaleur Qlima SCM 52 MULTI",
+          },
+        };
+        return assets[model] || null;
+      }
+
+      function getModelUrl(model) {
+        const urls = {
+          SC6026:
+            "https://www.qlima.fr/pompe-a-chaleur-air-air-pret-a-poser-sc-6026-blanc.html",
+          SC6035:
+            "https://www.qlima.fr/pompe-a-chaleur-air-air-pret-a-poser-sc-6035-blanc.html",
+          SC6053:
+            "https://www.qlima.fr/pompe-a-chaleur-air-air-pret-a-poser-sc-6053-blanc.html",
+          "SCM 52 DUO":
+            "https://www.qlima.fr/pompe-a-chaleur-duo-1-2-scm-52-duo-blanc.html",
+          "SCM 52 MULTI":
+            "https://www.qlima.fr/pompe-a-chaleur-multi-air-air-pret-a-poser-1-3-scm-52-multi-2x2-5-1x3-2-blanc.html",
+        };
+        return urls[model] || null;
       }
 
       function showResult() {
         const { status, issues } = evaluateEligibility();
 
-        // Cas bloquant : on explique pourquoi avant même de choisir un modèle
+        // Cas bloquant
         if (status === "blocked") {
           questionTextEl.textContent =
             "Votre situation nécessite des vérifications avant d’installer une pompe à chaleur air-air";
           const issuesList = issues.map((txt) => `<li>${txt}</li>`).join("");
 
           optionsContainerEl.innerHTML = `
-        <div class="result-text">
-          <p>
-            D’après vos réponses, une installation de pompe à chaleur air-air n’est pas validée pour le moment.
-          </p>
-          <ul class="result-list">
-            ${issuesList}
-          </ul>
-          <p>
-            Nous vous conseillons de vérifier ces points (accord propriétaire / syndic, emplacement extérieur, contraintes réglementaires) avant d’aller plus loin.
-          </p>
-        </div>
-        <button type="button" class="choice-btn" onclick="restartQuiz()">
-          Recommencer le questionnaire
-        </button>
-      `;
+            <div class="result-text">
+              <p>
+                D’après vos réponses, une installation de pompe à chaleur air-air n’est pas validée pour le moment.
+              </p>
+              <ul class="result-list">${issuesList}</ul>
+              <p>
+                Nous vous conseillons de vérifier ces points (accord propriétaire / syndic, emplacement extérieur, contraintes réglementaires) avant d’aller plus loin.
+              </p>
+            </div>
+
+            <button type="button" class="choice-btn primary" onclick="restartQuiz()">
+              Recommencer le questionnaire
+            </button>
+          `;
 
           stepIndicatorEl.textContent = "Conclusion";
           backBtn.style.display = "block";
+          currentStep = steps.length;
           return;
         }
 
-        // Sinon on peut recommander un modèle
+        // Recommandation
         const model = chooseModel();
+        const asset = getModelAsset(model);
+        const productUrl = getModelUrl(model);
+        const isMulti = model === "SCM 52 DUO" || model === "SCM 52 MULTI";
 
         let warningHtml = "";
         if (status === "conditional" && issues.length > 0) {
           const issuesList = issues.map((txt) => `<li>${txt}</li>`).join("");
           warningHtml = `
-        <div class="result-warning">
-          <p><strong>Points à vérifier avant l’installation :</strong></p>
-          <ul class="result-list">
-            ${issuesList}
-          </ul>
-        </div>
-      `;
+            <div class="result-warning">
+              <p><strong>Points à vérifier avant l’installation :</strong></p>
+              <ul class="result-list">${issuesList}</ul>
+            </div>
+          `;
         }
 
+        const badges = `
+          <div class="result-badges">
+            <span class="badge">${isMulti ? "Multi-split" : "Mono-split"}</span>
+            <span class="badge">${
+              isMulti
+                ? "Pose au sol obligatoire"
+                : "Pose sol ou façade possible"
+            }</span>
+          </div>
+        `;
+
         questionTextEl.textContent = "Votre recommandation Qlima";
+
         optionsContainerEl.innerHTML = `
-      <div class="result-text">
-        <p>
-          Le modèle recommandé pour votre situation est :
-          <strong>${model}</strong>.
-        </p>
-        <p>
-          Cette recommandation est basée sur le type de logement, la surface, l’isolation et le nombre de pièces à équiper.
-        </p>
-        ${warningHtml}
-      </div>
-      <button type="button" class="choice-btn" onclick="restartQuiz()">
-        Recommencer le questionnaire
-      </button>
-    `;
+          <div class="result-wrap">
+
+            <div class="result-hero">
+
+              <div class="result-product">
+                <img src="${asset?.src || ""}" alt="${
+          asset?.alt || ""
+        }" loading="lazy" />
+                <div class="result-model">
+                  <h3>Votre recommandation</h3>
+
+                  <p>
+                    Le modèle recommandé pour votre situation est :
+                    <strong>${model}</strong>.
+                  </p>
+                  <p>
+                    Cette recommandation est basée sur le type de logement, la surface,
+                    l’isolation et le nombre de pièces à équiper.
+                  </p>
+
+                  ${badges}
+
+                  <div class="result-cta">
+                    <a
+                      href="${productUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="choice-btn choice-link secondary"
+                    >
+                      Découvrir ce modèle sur Qlima.fr
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              ${warningHtml}
+            </div>
+
+            <div class="result-grid">
+
+              <div class="result-card">
+                <h4>Accessoires nécessaires (non inclus)</h4>
+                <p>
+                  L’achat de la PAC ne comprend pas tous les accessoires indispensables à la pose.
+                  Selon votre configuration, il faudra prévoir :
+                </p>
+                <ul class="result-list">
+                  <li>Les <strong>liaisons frigorifiques</strong> correspondant à la configuration choisie</li>
+                  <li>Les <strong>raccords</strong></li>
+                  <li>Les <strong>goulottes</strong></li>
+                  <li>Les <strong>silent blocs</strong></li>
+                  ${
+                    isMulti
+                      ? ""
+                      : "<li>Les <strong>équerres</strong> (uniquement si pose murale/façade)</li>"
+                  }
+                </ul>
+                <p style="margin-top:10px;">
+                  ${
+                    isMulti
+                      ? "<strong>Important :</strong> pour <strong>SCM 52 DUO</strong> et <strong>SCM 52 MULTI</strong>, la <strong>pose au sol est obligatoire</strong>."
+                      : "<strong>Note :</strong> pour les modèles mono-split, la pose au sol ou en façade est possible selon votre situation."
+                  }
+                </p>
+              </div>
+
+              <div class="result-card contact-card">
+                <h4>Contact technicien Qlima</h4>
+                <p>
+                  Pour discuter techniquement de l’installation et organiser la mise en service
+                  (pose par techniciens agréés), contactez-nous :
+                </p>
+                <div class="result-cta">
+                  <a class="choice-btn secondary" href="tel:+33232960749">Appeler le 02 32 96 07 49</a>
+                  <a
+                    class="choice-btn secondary"
+                    href="mailto:c.courvalet@pvg.eu?subject=Demande%20d%E2%80%99assistance%20pose%20PAC%20Qlima&body=Bonjour%2C%0A%0AJe viens de r%C3%A9aliser la simulation PAC air-air et j%E2%80%99aimerais %C3%AAtre accompagn%C3%A9(e) pour la pose et/ou la mise en service.%0A%0AMod%C3%A8le recommand%C3%A9%20%3A%20${encodeURIComponent(
+                      model
+                    )}%0A%0AVille%20%2F%20Code%20postal%20%3A%20%0AType%20de%20logement%20%3A%20%0ANombre%20de%20pi%C3%A8ces%20%C3%A0%20%C3%A9quiper%20%3A%20%0A%0AMerci%2C%0A"
+                  >
+                    Envoyer un e-mail
+                  </a>
+                </div>
+              </div>
+
+              <div class="result-card" style="grid-column: 1 / -1;">
+                <h4>Documents utiles avant la visite du technicien</h4>
+                <p>
+                  Consultez ces documents pour préparer la pose avant la mise en service par un technicien agréé :
+                </p>
+                <ul class="docs-list">
+                  <li>
+                    <a class="doc-link" href="https://www.qlima.com/media/wysiwyg/Pages_de_BAT_CARNET_CASTORAMA_POSE.pdf" target="_blank" rel="noopener noreferrer">
+                      Document 1 — Guide de pose
+                    </a>
+                  </li>
+                  <li>
+                    <a class="doc-link" href="https://www.qlima.com/media/wysiwyg/Pages_de_BAT_CARNET_CASTORAMA_MISE_EN_SERVICE.pdf" target="_blank" rel="noopener noreferrer">
+                      Document 2 — Guide mise en service
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+            </div>
+
+            <!-- ✅ demandé : bouton tout en bas -->
+            <button type="button" class="choice-btn primary" onclick="restartQuiz()">
+              Recommencer le questionnaire
+            </button>
+
+          </div>
+        `;
 
         stepIndicatorEl.textContent = "Simulation terminée";
         backBtn.style.display = "block";
-
-        // On positionne currentStep après la dernière question pour bien gérer le bouton retour
         currentStep = steps.length;
       }
 
-      // Gestion du bouton retour (flèche en haut à gauche)
       backBtn.addEventListener("click", () => {
-        // Si on est sur l'écran de résultat, on revient à la dernière question
         if (currentStep >= steps.length) {
           currentStep = steps.length - 1;
           renderStep();
-          return;
-        }
-
-        if (currentStep > 0) {
+        } else if (currentStep > 0) {
           currentStep--;
           renderStep();
         }
@@ -449,7 +572,6 @@
         renderStep();
       }
 
-      // Démarrage
       renderStep();
     </script>
   </body>
