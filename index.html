@@ -73,14 +73,8 @@
               label: "Oui, autorisées (ou accord du syndic)",
               value: "autorise",
             },
-            {
-              label: "Je ne sais pas / à vérifier",
-              value: "a_verifier",
-            },
-            {
-              label: "Non, interdit en façade / balcon",
-              value: "interdit",
-            },
+            { label: "Je ne sais pas / à vérifier", value: "a_verifier" },
+            { label: "Non, interdit en façade / balcon", value: "interdit" },
           ],
         },
         {
@@ -251,7 +245,7 @@
 
       function evaluateEligibility() {
         const issues = [];
-        let status = "ok";
+        let status = "ok"; // ok | conditional | blocked
 
         if (answers.status === "locataire_sans_accord") {
           status = "blocked";
@@ -382,17 +376,14 @@
         if (status === "blocked") {
           questionTextEl.textContent =
             "Votre situation nécessite des vérifications avant d’installer une pompe à chaleur air-air";
+
           const issuesList = issues.map((txt) => `<li>${txt}</li>`).join("");
 
           optionsContainerEl.innerHTML = `
             <div class="result-text">
-              <p>
-                D’après vos réponses, une installation de pompe à chaleur air-air n’est pas validée pour le moment.
-              </p>
+              <p>D’après vos réponses, une installation de pompe à chaleur air-air n’est pas validée pour le moment.</p>
               <ul class="result-list">${issuesList}</ul>
-              <p>
-                Nous vous conseillons de vérifier ces points (accord propriétaire / syndic, emplacement extérieur, contraintes réglementaires) avant d’aller plus loin.
-              </p>
+              <p>Nous vous conseillons de vérifier ces points avant d’aller plus loin.</p>
             </div>
 
             <button type="button" class="choice-btn primary" onclick="restartQuiz()">
@@ -406,7 +397,7 @@
           return;
         }
 
-        // Recommandation
+        // Reco
         const model = chooseModel();
         const asset = getModelAsset(model);
         const productUrl = getModelUrl(model);
@@ -440,12 +431,13 @@
           <div class="result-wrap">
 
             <div class="result-hero">
-
               <div class="result-product">
                 <img src="${asset?.src || ""}" alt="${
           asset?.alt || ""
         }" loading="lazy" />
+
                 <div class="result-model">
+                  <!-- ✅ comme demandé : titre au-dessus du texte, pas au-dessus de la photo -->
                   <h3>Votre recommandation</h3>
 
                   <p>
@@ -464,7 +456,7 @@
                       href="${productUrl}"
                       target="_blank"
                       rel="noopener noreferrer"
-                      class="choice-btn choice-link secondary"
+                      class="choice-btn secondary"
                     >
                       Découvrir ce modèle sur Qlima.fr
                     </a>
@@ -476,7 +468,6 @@
             </div>
 
             <div class="result-grid">
-
               <div class="result-card">
                 <h4>Accessoires nécessaires (non inclus)</h4>
                 <p>
@@ -484,7 +475,7 @@
                   Selon votre configuration, il faudra prévoir :
                 </p>
                 <ul class="result-list">
-                  <li>Les <strong>liaisons frigorifiques</strong> correspondant à la configuration choisie</li>
+                  <li>Les <strong>liaisons frigoridiques</strong> correspondant à la configuration choisie</li>
                   <li>Les <strong>raccords</strong></li>
                   <li>Les <strong>goulottes</strong></li>
                   <li>Les <strong>silent blocs</strong></li>
@@ -529,25 +520,47 @@
                 </p>
                 <ul class="docs-list">
                   <li>
-                    <a class="doc-link" href="https://www.qlima.com/media/wysiwyg/Pages_de_BAT_CARNET_CASTORAMA_POSE.pdf" target="_blank" rel="noopener noreferrer">
+                    <a class="doc-link" href="https://www.qlima.com/media/wysiwyg/PAGE_DE_POSE.pdf" target="_blank" rel="noopener noreferrer">
                       Document 1 — Guide de pose
                     </a>
                   </li>
                   <li>
-                    <a class="doc-link" href="https://www.qlima.com/media/wysiwyg/Pages_de_BAT_CARNET_CASTORAMA_MISE_EN_SERVICE.pdf" target="_blank" rel="noopener noreferrer">
+                    <a class="doc-link" href="https://www.qlima.com/media/wysiwyg/PAGE_MISE_EN_SERVICE.pdf" target="_blank" rel="noopener noreferrer">
                       Document 2 — Guide mise en service
                     </a>
                   </li>
                 </ul>
               </div>
 
+              <!-- ✅ Nouveau bloc demandé : demande de mise en service en ligne -->
+              <div class="result-card" style="grid-column: 1 / -1;">
+                <h4>Demande de mise en service</h4>
+                <p>
+                  Une fois votre pompe à chaleur achetée et <strong>l’installation correctement réalisée</strong>
+                  (pose des unités, liaisons frigorifiques, accessoires et raccordements électriques),
+                  vous pouvez effectuer une <strong>demande de mise en service</strong> directement en ligne.
+                </p>
+                <p>
+                  Cette démarche permet à un technicien agréé Qlima de vérifier la conformité de l’installation
+                  et de procéder à la mise en service de l’appareil.
+                </p>
+                <div class="result-cta">
+                  <a
+                    class="choice-btn secondary"
+                    href="https://pvg-portail-client.dotsoft.fr/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Faire une demande de mise en service en ligne
+                  </a>
+                </div>
+              </div>
             </div>
 
-            <!-- ✅ demandé : bouton tout en bas -->
+            <!-- ✅ bouton tout en bas + centré (comme on avait fait via CSS) -->
             <button type="button" class="choice-btn primary" onclick="restartQuiz()">
               Recommencer le questionnaire
             </button>
-
           </div>
         `;
 
@@ -556,11 +569,14 @@
         currentStep = steps.length;
       }
 
+      // Retour
       backBtn.addEventListener("click", () => {
         if (currentStep >= steps.length) {
           currentStep = steps.length - 1;
           renderStep();
-        } else if (currentStep > 0) {
+          return;
+        }
+        if (currentStep > 0) {
           currentStep--;
           renderStep();
         }
@@ -572,6 +588,7 @@
         renderStep();
       }
 
+      // Démarrage
       renderStep();
     </script>
   </body>
