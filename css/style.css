@@ -11,7 +11,12 @@ html {
 
 /* PAGE */
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
   background-color: #87a290;
 
   min-height: 100vh;
@@ -66,7 +71,9 @@ body {
   color: #233239;
   padding: 6px;
   line-height: 1;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -118,7 +125,9 @@ body {
   cursor: pointer;
   width: 100%;
   max-width: 520px;
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   text-decoration: none;
@@ -443,4 +452,53 @@ body {
   .card-title {
     padding-top: 28px; /* laisse la place à la flèche */
   }
+}
+
+/* ====== AJOUT : BULLE TARIFS (en bas du résultat) ====== */
+.pricing-bubble {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f1b434;
+  border: 1px solid #f1b434;
+
+  color: #233239;
+  text-align: left;
+}
+
+.pricing-bubble h4 {
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+  color: #233239;
+}
+
+.pricing-bubble p {
+  margin-bottom: 10px;
+  color: #444;
+  line-height: 1.45;
+}
+
+.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 12px;
+  font-size: 0.98rem;
+}
+
+.pricing-table th,
+.pricing-table td {
+  padding: 10px 10px;
+  border-top: 1px solid rgba(35, 50, 57, 0.12);
+  vertical-align: top;
+}
+
+.pricing-table th {
+  text-align: left;
+  font-weight: 700;
+}
+
+.pricing-note {
+  font-size: 0.92rem;
+  color: #233239;
+  opacity: 0.9;
 }

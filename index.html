@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -157,6 +157,33 @@
             { label: "Ouest / soleil l’après-midi", value: "ouest" },
           ],
         },
+
+        /* ✅ AJOUT : nombre de fenêtres */
+        {
+          key: "windowsCount",
+          label:
+            "Combien de fenêtres y a-t-il environ dans la pièce principale ?",
+          options: [
+            { label: "0 à 1 fenêtre", value: "W1" },
+            { label: "2 à 3 fenêtres", value: "W2" },
+            { label: "4 fenêtres ou plus", value: "W3" },
+          ],
+        },
+
+        /* ✅ AJOUT : température souhaitée */
+        {
+          key: "tempSetpoint",
+          label: "Quelle température souhaitez-vous en chauffage (en hiver) ?",
+          options: [
+            { label: "19°C", value: 19 },
+            { label: "20°C", value: 20 },
+            { label: "21°C", value: 21 },
+            { label: "22°C", value: 22 },
+            { label: "23°C", value: 23 },
+            { label: "24°C", value: 24 },
+          ],
+        },
+
         {
           key: "climate",
           label: "Dans quelle région habitez-vous ?",
@@ -226,7 +253,7 @@
           btn.className = "choice-btn";
           btn.textContent = option.label;
           btn.addEventListener("click", () =>
-            handleAnswer(step.key, option.value)
+            handleAnswer(step.key, option.value),
           );
           optionsContainerEl.appendChild(btn);
         });
@@ -250,54 +277,54 @@
         if (answers.status === "locataire_sans_accord") {
           status = "blocked";
           issues.push(
-            "Vous êtes locataire sans accord écrit : il est indispensable d’obtenir l’autorisation du propriétaire (et éventuellement du syndic) avant toute installation."
+            "Vous êtes locataire sans accord écrit : il est indispensable d’obtenir l’autorisation du propriétaire (et éventuellement du syndic) avant toute installation.",
           );
         }
 
         if (answers.copro === "interdit") {
           status = "blocked";
           issues.push(
-            "Votre copropriété interdit les unités extérieures en façade / balcon. Sans dérogation, l’installation d’une PAC air-air n’est pas possible."
+            "Votre copropriété interdit les unités extérieures en façade / balcon. Sans dérogation, l’installation d’une PAC air-air n’est pas possible.",
           );
         } else if (answers.copro === "a_verifier" && status !== "blocked") {
           status = "conditional";
           issues.push(
-            "Les règles de copropriété doivent être vérifiées (règlement ou contact avec le syndic) avant de valider le projet."
+            "Les règles de copropriété doivent être vérifiées (règlement ou contact avec le syndic) avant de valider le projet.",
           );
         }
 
         if (answers.outdoorSpace === "aucun") {
           status = "blocked";
           issues.push(
-            "Vous n’indiquez aucun emplacement possible pour l’unité extérieure. Une PAC air-air nécessite obligatoirement un emplacement extérieur adapté."
+            "Vous n’indiquez aucun emplacement possible pour l’unité extérieure. Une PAC air-air nécessite obligatoirement un emplacement extérieur adapté.",
           );
         }
 
         if (answers.electricPower === "6kva" && status !== "blocked") {
           status = "conditional";
           issues.push(
-            "Avec un abonnement de 6 kVA, une vérification de la puissance disponible et de la gestion des autres appareils électriques est recommandée."
+            "Avec un abonnement de 6 kVA, une vérification de la puissance disponible et de la gestion des autres appareils électriques est recommandée.",
           );
         }
 
         if (answers.electricPanel === "non" && status !== "blocked") {
           status = "conditional";
           issues.push(
-            "Votre tableau électrique semble ancien : un électricien devra vérifier la possibilité d’ajouter un circuit dédié et sécurisé."
+            "Votre tableau électrique semble ancien : un électricien devra vérifier la possibilité d’ajouter un circuit dédié et sécurisé.",
           );
         }
 
         if (answers.electricPanel === "inconnu" && status !== "blocked") {
           status = status === "ok" ? "conditional" : status;
           issues.push(
-            "L’état du tableau électrique reste à vérifier pour garantir un branchement conforme et sécurisé."
+            "L’état du tableau électrique reste à vérifier pour garantir un branchement conforme et sécurisé.",
           );
         }
 
         if (answers.noise === "fortes" && status !== "blocked") {
           status = status === "ok" ? "conditional" : status;
           issues.push(
-            "Vous mentionnez des contraintes sonores fortes : le choix de l’emplacement et du modèle devra être étudié avec attention."
+            "Vous mentionnez des contraintes sonores fortes : le choix de l’emplacement et du modèle devra être étudié avec attention.",
           );
         }
 
@@ -310,20 +337,53 @@
         const isolation = answers.isolation;
         const climate = answers.climate;
 
+        // ✅ nouvelles réponses
+        const windowsCount = answers.windowsCount; // W1 | W2 | W3
+        const tempSetpoint = Number(answers.tempSetpoint || 21); // 19..24
+
         if (rooms >= 2) return rooms === 2 ? "SCM 52 DUO" : "SCM 52 MULTI";
-        if (surface === "S1") return "SC6026";
+        if (surface === "S1") {
+          // Si besoin élevé, on monte à SC6035
+          let score = 0;
+          if (isolation === "moyenne") score += 1;
+          if (isolation === "faible") score += 2;
+          if (climate === "froid") score += 1;
+          if (climate === "montagne") score += 2;
+          if (windowsCount === "W2") score += 1;
+          if (windowsCount === "W3") score += 2;
+          if (tempSetpoint >= 22) score += 1;
+          if (tempSetpoint >= 23) score += 2;
+
+          return score >= 4 ? "SC6035" : "SC6026";
+        }
 
         if (surface === "S2") {
+          // Base (ton ancienne logique)
+          let base = "SC6035";
           if (
             isolation === "faible" ||
             climate === "froid" ||
             climate === "montagne"
           ) {
-            return "SC6053";
+            base = "SC6053";
           }
-          return "SC6035";
+
+          // Ajustement via fenêtres + température
+          let score = 0;
+          if (isolation === "moyenne") score += 1;
+          if (isolation === "faible") score += 2;
+          if (climate === "froid") score += 1;
+          if (climate === "montagne") score += 2;
+          if (windowsCount === "W2") score += 1;
+          if (windowsCount === "W3") score += 2;
+          if (tempSetpoint >= 22) score += 1;
+          if (tempSetpoint >= 23) score += 2;
+
+          if (base === "SC6035" && score >= 4) return "SC6053";
+          return base;
         }
 
+        // S3 => SC6053 (inchangé)
         return "SC6053";
       }
 
@@ -367,6 +427,44 @@
             "https://www.qlima.fr/pompe-a-chaleur-multi-air-air-pret-a-poser-1-3-scm-52-multi-2x2-5-1x3-2-blanc.html",
         };
         return urls[model] || null;
+      }
+
+      /* ===== AJOUT : TARIFS DE POSE ===== */
+      function getInstallPricing(model) {
+        const mono = [
+          {
+            label: "Unité extérieure posée au sol (liaisons 4m)",
+            price: "610€",
+          },
+          {
+            label: "Unité extérieure posée au sol (liaisons 8m)",
+            price: "699€",
+          },
+          {
+            label: "Unité extérieure fixée au mur (liaisons 4m)",
+            price: "610€",
+          },
+          {
+            label: "Unité extérieure fixée au mur (liaisons 8m)",
+            price: "699€",
+          },
+        ];
+
+        const map = {
+          SC6026: mono,
+          SC6035: mono,
+          SC6053: mono,
+          "SCM 52 DUO": [
+            { label: "Installation (jusqu’à 8m)", price: "959€" },
+            { label: "Installation (jusqu’à 12m)", price: "1010€" },
+          ],
+          "SCM 52 MULTI": [
+            { label: "Installation (jusqu’à 8m)", price: "1250€" },
+            { label: "Installation (jusqu’à 12m)", price: "1300€" },
+          ],
+        };
+
+        return map[model] || [];
       }
 
       function showResult() {
@@ -425,6 +523,47 @@
           </div>
         `;
 
+        /* ===== AJOUT : BULLE TARIFS (en bas) ===== */
+        const pricing = getInstallPricing(model);
+        const pricingRows = pricing
+          .map(
+            (row) => `
+              <tr>
+                <td>${row.label}</td>
+                <td><strong>${row.price}</strong></td>
+              </tr>
+            `,
+          )
+          .join("");
+
+        const pricingHtml = `
+          <div class="pricing-bubble">
+            <h4>Tarifs indicatifs de pose</h4>
+            <p class="pricing-note">
+              Tarifs de pose indicatifs, confirmés lors de la visite technique.
+            </p>
+
+            <table class="pricing-table">
+              <thead>
+                <tr>
+                  <th>Prestation</th>
+                  <th>Tarif</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pricingRows}
+              </tbody>
+            </table>
+
+            <p class="pricing-note"><strong>Options (tous modèles) :</strong></p>
+            <ul class="result-list" style="margin: 10px 0 0; padding-left: 18px;">
+              <li>Démontage et enlèvement ancien climatiseur : <strong>199€</strong></li>
+              <li>Perçage mur jusqu’à 60 cm (pierre/béton hors béton armé) : <strong>99€</strong></li>
+              <li>Pose d’une pompe de relevage : <strong>99€</strong></li>
+            </ul>
+          </div>
+        `;
+
         questionTextEl.textContent = "Votre recommandation Qlima";
 
         optionsContainerEl.innerHTML = `
@@ -433,8 +572,8 @@
             <div class="result-hero">
               <div class="result-product">
                 <img src="${asset?.src || ""}" alt="${
-          asset?.alt || ""
-        }" loading="lazy" />
+                  asset?.alt || ""
+                }" loading="lazy" />
 
                 <div class="result-model">
                   <!-- ✅ comme demandé : titre au-dessus du texte, pas au-dessus de la photo -->
@@ -501,11 +640,15 @@
                   (pose par techniciens agréés), contactez-nous :
                 </p>
                 <div class="result-cta">
-                  <a class="choice-btn secondary" href="tel:+33232960749">Appeler le 02 32 96 07 49</a>
+                  ${
+                    isMulti
+                      ? `<a class="choice-btn secondary" href="tel:+33232960749">Appeler le 02 32 96 07 49</a>`
+                      : ""
+                  }
                   <a
                     class="choice-btn secondary"
                     href="mailto:c.courvalet@pvg.eu?subject=Demande%20d%E2%80%99assistance%20pose%20PAC%20Qlima&body=Bonjour%2C%0A%0AJe viens de r%C3%A9aliser la simulation PAC air-air et j%E2%80%99aimerais %C3%AAtre accompagn%C3%A9(e) pour la pose et/ou la mise en service.%0A%0AMod%C3%A8le recommand%C3%A9%20%3A%20${encodeURIComponent(
-                      model
+                      model,
                     )}%0A%0AVille%20%2F%20Code%20postal%20%3A%20%0AType%20de%20logement%20%3A%20%0ANombre%20de%20pi%C3%A8ces%20%C3%A0%20%C3%A9quiper%20%3A%20%0A%0AMerci%2C%0A"
                   >
                     Envoyer un e-mail
@@ -537,7 +680,7 @@
                 <h4>Demande de mise en service</h4>
                 <p>
                   Une fois votre pompe à chaleur achetée et <strong>l’installation correctement réalisée</strong>
-                  (pose des unités, liaisons frigorifiques, accessoires et raccordements électriques),
+                  (pose des unités, liaisons frigoridiques, accessoires et raccordements électriques),
                   vous pouvez effectuer une <strong>demande de mise en service</strong> directement en ligne.
                 </p>
                 <p>
@@ -557,7 +700,10 @@
               </div>
             </div>
 
-            <!-- ✅ bouton tout en bas + centré (comme on avait fait via CSS) -->
+            <!-- ✅ AJOUT : bulle tarifs en bas -->
+            ${pricingHtml}
+
+            <!-- ✅ bouton tout en bas + centré -->
             <button type="button" class="choice-btn primary" onclick="restartQuiz()">
               Recommencer le questionnaire
             </button>
