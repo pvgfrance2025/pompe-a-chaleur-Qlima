@@ -342,8 +342,9 @@
         const tempSetpoint = Number(answers.tempSetpoint || 21); // 19..24
 
         if (rooms >= 2) return rooms === 2 ? "SCM 52 DUO" : "SCM 52 MULTI";
+
         if (surface === "S1") {
-          // Si besoin élevé, on monte à SC6035
+          // Si besoin élevé, on monte à SC 7035
           let score = 0;
           if (isolation === "moyenne") score += 1;
           if (isolation === "faible") score += 2;
@@ -354,18 +355,18 @@
           if (tempSetpoint >= 22) score += 1;
           if (tempSetpoint >= 23) score += 2;
 
-          return score >= 4 ? "SC6035" : "SC6026";
+          return score >= 4 ? "SC 7035" : "SC 7026";
         }
 
         if (surface === "S2") {
-          // Base (ton ancienne logique)
-          let base = "SC6035";
+          // Base
+          let base = "SC 7035";
           if (
             isolation === "faible" ||
             climate === "froid" ||
             climate === "montagne"
           ) {
-            base = "SC6053";
+            base = "SC 7053";
           }
 
           // Ajustement via fenêtres + température
@@ -379,27 +380,27 @@
           if (tempSetpoint >= 22) score += 1;
           if (tempSetpoint >= 23) score += 2;
 
-          if (base === "SC6035" && score >= 4) return "SC6053";
+          if (base === "SC 7035" && score >= 4) return "SC 7053";
           return base;
         }
 
-        // S3 => SC6053 (inchangé)
-        return "SC6053";
+        // S3 => SC 7053
+        return "SC 7053";
       }
 
       function getModelAsset(model) {
         const assets = {
-          SC6026: {
-            src: "img/pac/SC6026.png",
-            alt: "Pompe à chaleur Qlima SC6026",
+          "SC 7026": {
+            src: "img/pac/SC7026.png",
+            alt: "Pompe à chaleur Qlima SC 7026",
           },
-          SC6035: {
-            src: "img/pac/SC6035.png",
-            alt: "Pompe à chaleur Qlima SC6035",
+          "SC 7035": {
+            src: "img/pac/SC7035.png",
+            alt: "Pompe à chaleur Qlima SC 7035",
           },
-          SC6053: {
-            src: "img/pac/SC6053.png",
-            alt: "Pompe à chaleur Qlima SC6053",
+          "SC 7053": {
+            src: "img/pac/SC7053.png",
+            alt: "Pompe à chaleur Qlima SC 7053",
           },
           "SCM 52 DUO": {
             src: "img/pac/SCM52_DUO.png",
@@ -415,12 +416,9 @@
 
       function getModelUrl(model) {
         const urls = {
-          SC6026:
-            "https://www.qlima.fr/pompe-a-chaleur-air-air-pret-a-poser-sc-6026-blanc.html",
-          SC6035:
-            "https://www.qlima.fr/pompe-a-chaleur-air-air-pret-a-poser-sc-6035-blanc.html",
-          SC6053:
-            "https://www.qlima.fr/pompe-a-chaleur-air-air-pret-a-poser-sc-6053-blanc.html",
+          "SC 7026": "#", // TODO: remplacer par l’URL produit Qlima.fr
+          "SC 7035": "#", // TODO: remplacer par l’URL produit Qlima.fr
+          "SC 7053": "#", // TODO: remplacer par l’URL produit Qlima.fr
           "SCM 52 DUO":
             "https://www.qlima.fr/pompe-a-chaleur-duo-1-2-scm-52-duo-blanc.html",
           "SCM 52 MULTI":
@@ -434,7 +432,7 @@
         const mono = [
           {
             label: "Unité extérieure posée au sol (liaisons 4m)",
-            price: "610€",
+            price: "599€",
           },
           {
             label: "Unité extérieure posée au sol (liaisons 8m)",
@@ -442,7 +440,7 @@
           },
           {
             label: "Unité extérieure fixée au mur (liaisons 4m)",
-            price: "610€",
+            price: "599",
           },
           {
             label: "Unité extérieure fixée au mur (liaisons 8m)",
@@ -451,9 +449,9 @@
         ];
 
         const map = {
-          SC6026: mono,
-          SC6035: mono,
-          SC6053: mono,
+          "SC 7026": mono,
+          "SC 7035": mono,
+          "SC 7053": mono,
           "SCM 52 DUO": [
             { label: "Installation (jusqu’à 8m)", price: "959€" },
             { label: "Installation (jusqu’à 12m)", price: "1010€" },
@@ -537,11 +535,13 @@
           .join("");
 
         const pricingHtml = `
-          <div class="pricing-bubble">
-            <h4>Tarifs indicatifs de pose</h4>
-            <p class="pricing-note">
-              Tarifs de pose indicatifs, confirmés lors de la visite technique.
-            </p>
+  <div class="pricing-bubble">
+    <h4>Tarifs indicatifs de pose – PVG France</h4>
+    <p class="pricing-note">
+      Tarifs indicatifs de pose et de mise en service, confirmés lors de la visite technique.
+      <br />
+      <strong>Les accessoires ne sont pas compris et restent à votre charge.</strong>
+    </p>
 
             <table class="pricing-table">
               <thead>
@@ -576,7 +576,6 @@
                 }" loading="lazy" />
 
                 <div class="result-model">
-                  <!-- ✅ comme demandé : titre au-dessus du texte, pas au-dessus de la photo -->
                   <h3>Votre recommandation</h3>
 
                   <p>
@@ -606,32 +605,59 @@
               ${warningHtml}
             </div>
 
-            <div class="result-grid">
-              <div class="result-card">
-                <h4>Accessoires nécessaires (non inclus)</h4>
-                <p>
-                  L’achat de la PAC ne comprend pas tous les accessoires indispensables à la pose.
-                  Selon votre configuration, il faudra prévoir :
-                </p>
-                <ul class="result-list">
-                  <li>Les <strong>liaisons frigoridiques</strong> correspondant à la configuration choisie</li>
-                  <li>Les <strong>raccords</strong></li>
-                  <li>Les <strong>goulottes</strong></li>
-                  <li>Les <strong>silent blocs</strong></li>
-                  ${
-                    isMulti
-                      ? ""
-                      : "<li>Les <strong>équerres</strong> (uniquement si pose murale/façade)</li>"
-                  }
-                </ul>
-                <p style="margin-top:10px;">
-                  ${
-                    isMulti
-                      ? "<strong>Important :</strong> pour <strong>SCM 52 DUO</strong> et <strong>SCM 52 MULTI</strong>, la <strong>pose au sol est obligatoire</strong>."
-                      : "<strong>Note :</strong> pour les modèles mono-split, la pose au sol ou en façade est possible selon votre situation."
-                  }
-                </p>
-              </div>
+            <div class="result-card">
+  <h4>Accessoires inclus</h4>
+  <ul class="result-list">
+    <li><strong>Unité extérieure</strong></li>
+
+    ${
+      isMulti
+        ? `<li><strong>Unités intérieures (selon configuration DUO ou MULTI)</strong></li>`
+        : `<li><strong>Unité intérieure</strong></li>`
+    }
+
+    <li><strong>Kit de liaison SPCQ1 ou SPCQ2</strong></li>
+  </ul>
+
+  <hr style="margin:18px 0; border:none; border-top:1px solid #e1e7e3;" />
+
+  <h4>Accessoires nécessaires (non inclus)</h4>
+
+  <p>
+    L’achat de la PAC ne comprend pas tous les accessoires indispensables à la pose.
+    Selon votre configuration, il faudra prévoir :
+  </p>
+
+  <ul class="result-list">
+    <li>Les <strong>liaisons frigorifiques</strong> complémentaires si besoin</li>
+    <li>Les <strong>raccords</strong></li>
+    <li>Les <strong>goulottes</strong></li>
+    <li>Les <strong>silent blocs</strong></li>
+
+    ${
+      isMulti
+        ? ""
+        : "<li>Les <strong>équerres</strong> (uniquement si pose murale/façade)</li>"
+    }
+
+    <li>
+      <strong>Ligne électrique dédiée depuis le tableau électrique</strong>
+      ${
+        isMulti
+          ? "(circuit 20A obligatoire pour modèles bi / tri-split)"
+          : "(circuit 16A dédié pour modèles mono-split)"
+      }
+    </li>
+  </ul>
+
+  <p style="margin-top:10px;">
+    ${
+      isMulti
+        ? "<strong>Important :</strong> pour <strong>SCM 52 DUO</strong> et <strong>SCM 52 MULTI</strong>, la <strong>pose au sol est obligatoire</strong>."
+        : "<strong>Note :</strong> pour les modèles mono-split, la pose au sol ou en façade est possible selon votre situation."
+    }
+  </p>
+</div>
 
               <div class="result-card contact-card">
                 <h4>Contact technicien Qlima</h4>
@@ -642,12 +668,22 @@
                 <div class="result-cta">
                   ${
                     isMulti
-                      ? `<a class="choice-btn secondary" href="tel:+33232960749">Appeler le 02 32 96 07 49</a>`
+                      ? `
+      <a class="choice-btn secondary" href="tel:+33232960749">
+        Appeler le 02 32 96 07 49
+      </a>
+      <a class="choice-btn secondary" href="tel:+33232967320">
+        Appeler le 02 32 96 73 20
+      </a>
+      <a class="choice-btn secondary" href="tel:+33232960765">
+        Appeler le 02 32 96 07 65
+      </a>
+    `
                       : ""
                   }
                   <a
                     class="choice-btn secondary"
-                    href="mailto:c.courvalet@pvg.eu?subject=Demande%20d%E2%80%99assistance%20pose%20PAC%20Qlima&body=Bonjour%2C%0A%0AJe viens de r%C3%A9aliser la simulation PAC air-air et j%E2%80%99aimerais %C3%AAtre accompagn%C3%A9(e) pour la pose et/ou la mise en service.%0A%0AMod%C3%A8le recommand%C3%A9%20%3A%20${encodeURIComponent(
+                    href="mailto:contact@pvg.eu?subject=Demande%20d%E2%80%99assistance%20pose%20PAC%20Qlima&body=Bonjour%2C%0A%0AJe viens de r%C3%A9aliser la simulation PAC air-air et j%E2%80%99aimerais %C3%AAtre accompagn%C3%A9(e) pour la pose et/ou la mise en service.%0A%0AMod%C3%A8le recommand%C3%A9%20%3A%20${encodeURIComponent(
                       model,
                     )}%0A%0AVille%20%2F%20Code%20postal%20%3A%20%0AType%20de%20logement%20%3A%20%0ANombre%20de%20pi%C3%A8ces%20%C3%A0%20%C3%A9quiper%20%3A%20%0A%0AMerci%2C%0A"
                   >
@@ -675,35 +711,61 @@
                 </ul>
               </div>
 
-              <!-- ✅ Nouveau bloc demandé : demande de mise en service en ligne -->
-              <div class="result-card" style="grid-column: 1 / -1;">
-                <h4>Demande de mise en service</h4>
-                <p>
-                  Une fois votre pompe à chaleur achetée et <strong>l’installation correctement réalisée</strong>
-                  (pose des unités, liaisons frigoridiques, accessoires et raccordements électriques),
-                  vous pouvez effectuer une <strong>demande de mise en service</strong> directement en ligne.
-                </p>
-                <p>
-                  Cette démarche permet à un technicien agréé Qlima de vérifier la conformité de l’installation
-                  et de procéder à la mise en service de l’appareil.
-                </p>
-                <div class="result-cta">
-                  <a
-                    class="choice-btn secondary"
-                    href="https://pvg-portail-client.dotsoft.fr/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Faire une demande de mise en service en ligne
-                  </a>
-                </div>
-              </div>
-            </div>
+${
+  isMulti
+    ? `
+    <div class="result-card" style="grid-column: 1 / -1;">
+      <h4>Installation et mise en service – modèles DUO / MULTI</h4>
 
-            <!-- ✅ AJOUT : bulle tarifs en bas -->
+      <p>
+        Les modèles <strong>SCM 52 DUO</strong> et <strong>SCM 52 MULTI</strong>
+        nécessitent une installation plus technique qu’un mono-split.
+      </p>
+
+      <p>
+        Deux situations sont possibles :
+      </p>
+
+      <ul class="result-list">
+        <li>
+          <strong>Vous êtes un bricoleur expérimenté ou un professionnel :</strong>
+          vous pouvez réaliser l’installation complète puis effectuer
+          une demande de mise en service en ligne.
+        </li>
+
+        <li>
+          <strong>Vous n’êtes pas certain(e) de maîtriser l’installation :</strong>
+          une <strong>pré-visite technique est obligatoire</strong> afin de
+          valider la faisabilité et la conformité du projet.
+        </li>
+      </ul>
+
+      <p>
+        La pré-visite peut être achetée :
+      </p>
+
+      <ul class="result-list">
+        <li>Directement sur le site Qlima</li>
+        <li>Ou en magasin revendeur lors de l’achat de la pompe à chaleur</li>
+      </ul>
+
+      <div class="result-cta">
+        <a
+          class="choice-btn secondary"
+          href="https://pvg-portail-client.dotsoft.fr/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Demande de mise en service (installateurs confirmés)
+        </a>
+      </div>
+    </div>
+  `
+    : ``
+}
+
             ${pricingHtml}
 
-            <!-- ✅ bouton tout en bas + centré -->
             <button type="button" class="choice-btn primary" onclick="restartQuiz()">
               Recommencer le questionnaire
             </button>
