@@ -440,12 +440,20 @@
             price: "699€",
           },
           {
+            label: "Unité extérieure posée au sol (liaisons 12m)",
+            price: "746€",
+          },
+          {
             label: "Unité extérieure fixée au mur (liaisons 4m)",
             price: "599€",
           },
           {
             label: "Unité extérieure fixée au mur (liaisons 8m)",
             price: "699€",
+          },
+          {
+            label: "Unité extérieure fixée au mur (liaisons 12m)",
+            price: "746€",
           },
         ];
 
@@ -454,8 +462,8 @@
           "SC 7035": mono,
           "SC 7053": mono,
           "SCM 70 DUO": [
-            { label: "Installation (jusqu’à 8m)", price: "959€" },
-            { label: "Installation (jusqu’à 12m)", price: "1010€" },
+            { label: "Installation (jusqu’à 8m)", price: "889€" },
+            { label: "Installation (jusqu’à 12m)", price: "999€" },
           ],
           "SCM 70 MULTI": [
             { label: "Installation (jusqu’à 8m)", price: "1250€" },
@@ -620,7 +628,6 @@
                     : `<li><strong>Unité intérieure</strong></li>`
                 }
 
-                <li><strong>Kit de liaison SPCQ1 ou SPCQ2</strong></li>
               </ul>
 
               <hr style="margin:18px 0; border:none; border-top:1px solid #e1e7e3;" />
@@ -634,6 +641,25 @@
 
               <ul class="result-list">
                 <li>Les <strong>liaisons frigorifiques</strong> complémentaires si besoin</li>
+                ${
+                  {
+                    "SC 7026": "Liaison 4m (3/8)",
+                    "SC 7035": "Liaison 4m (3/8)",
+                    "SC 7053": "Liaison 4m (1/2)",
+                    "SCM 70 DUO": "Liaison 4m (3/8)",
+                    "SCM 70 MULTI": "Liaison 4m (3/8)",
+                  }[model]
+                    ? `<li><strong>${
+                        {
+                          "SC 7026": "Liaison 4m (3/8)",
+                          "SC 7035": "Liaison 4m (3/8)",
+                          "SC 7053": "Liaison 4m (1/2)",
+                          "SCM 70 DUO": "Liaison 4m (3/8)",
+                          "SCM 70 MULTI": "Liaison 4m (3/8)",
+                        }[model]
+                      }</strong></li>`
+                    : ""
+                }
                 <li>Les <strong>raccords</strong></li>
                 <li>Les <strong>goulottes</strong></li>
                 <li>Les <strong>silent blocs</strong></li>
