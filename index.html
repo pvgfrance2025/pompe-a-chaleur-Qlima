@@ -745,6 +745,37 @@
             </div>
 
             ${
+              !isMulti
+                ? `
+                  <div class="result-card" style="grid-column: 1 / -1;">
+                    <h4>Installation et mise en service</h4>
+
+                    <p>
+                      Regardez ce tutoriel vidéo pour vous guider dans la pose de l'unité intérieure et de l'unité extérieure :
+                    </p>
+
+                    <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px; margin:16px 0;">
+                      <iframe
+                        src="https://www.youtube.com/embed/6m1t8EZ7gzg"
+                        title="Tutoriel pose unité intérieure et extérieure Qlima"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        style="position:absolute; top:0; left:0; width:100%; height:100%;"
+                      ></iframe>
+                    </div>
+
+                    <div style="background:#fff8e1; border-left:4px solid #f59e0b; border-radius:6px; padding:14px 18px; margin-top:16px;">
+                      <p style="margin:0 0 8px;"><strong>⚠️ Important : la mise en service est obligatoire par un professionnel qualifié.</strong></p>
+                      <p style="margin:0 0 8px;">L'ouverture des vannes frigorifiques est strictement interdite au client. Cette opération doit être réalisée uniquement par un professionnel habilité.</p>
+                      <p style="margin:0;">En cas d'ouverture des vannes par le client, la garantie de l'appareil ne pourra pas s'appliquer.</p>
+                    </div>
+                  </div>
+                `
+                : ``
+            }
+
+            ${
               isMulti
                 ? `
                   <div class="result-card" style="grid-column: 1 / -1;">
