@@ -508,11 +508,13 @@
           stepIndicatorEl.textContent = "Conclusion";
           backBtn.style.display = "block";
           currentStep = steps.length;
+          gtag('event', 'simulation_completed', { status: 'blocked' });
           return;
         }
 
         // Reco
         const model = chooseModel();
+        gtag('event', 'simulation_completed', { status: status, model_recommended: model });
         const asset = getModelAsset(model);
         const productUrl = getModelUrl(model);
 
